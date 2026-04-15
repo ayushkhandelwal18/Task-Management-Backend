@@ -94,15 +94,15 @@ All responses follow this JSON format:
 ```
 
 ### 1. Create a Task
-**POST** `/tasks`
+**POST** `http://localhost:3000/tasks`
 
 **Request Body**:
 ```json
 {
-  "title": "Buy groceries",
-  "description": "Milk, eggs, and bread",
+  "title": "Update the schema and build error handling",
+  "description": "Refactor Task schema to include priority levels and implement comprehensive error handling middleware with proper HTTP status codes",
   "dueDate": "2026-05-15T10:00:00Z",
-  "category": "Shopping"
+  "category": "Database"
 }
 ```
 
@@ -110,6 +110,7 @@ All responses follow this JSON format:
 - `title` is required and cannot be empty
 - `description` is optional
 - `dueDate` and `category` are optional
+- Recommended categories: `Backend`, `Database`, `Frontend`, `DevOps`, `Security`, `Documentation`, `Testing`
 
 **Response** (201):
 ```json
@@ -118,11 +119,11 @@ All responses follow this JSON format:
   "message": "Task created successfully",
   "data": {
     "_id": "507f1f77bcf86cd799439011",
-    "title": "Buy groceries",
-    "description": "Milk, eggs, and bread",
+    "title": "Update the schema and build error handling",
+    "description": "Refactor Task schema to include priority levels and implement comprehensive error handling middleware with proper HTTP status codes",
     "completed": false,
     "dueDate": "2026-05-15T10:00:00Z",
-    "category": "Shopping",
+    "category": "Database",
     "createdAt": "2026-04-14T10:00:00Z",
     "updatedAt": "2026-04-14T10:00:00Z"
   }
@@ -130,18 +131,19 @@ All responses follow this JSON format:
 ```
 
 ### 2. Get All Tasks
-**GET** `/tasks`
+**GET** `http://localhost:3000/tasks`
 
 **Query Parameters** (optional):
 - `page` - Page number (default: 1)
 - `limit` - Tasks per page (default: 10)
 - `completed` - Filter by status: `true`, `false`, or omit for all
 
-**Examples**:
-- `/tasks` - Get all tasks (page 1, 10 per page)
-- `/tasks?page=2&limit=5` - Get page 2 with 5 tasks
-- `/tasks?completed=false` - Get only incomplete tasks
-- `/tasks?page=1&limit=10&completed=true` - Completed tasks
+**URL Examples**:
+- `http://localhost:3000/tasks` - Get all tasks (page 1, 10 per page)
+- `http://localhost:3000/tasks?page=2&limit=5` - Get page 2 with 5 tasks per page
+- `http://localhost:3000/tasks?completed=false` - Get only incomplete tasks
+- `http://localhost:3000/tasks?completed=true` - Get only completed tasks
+- `http://localhost:3000/tasks?page=1&limit=20&completed=false` - Get page 1 with 20 incomplete tasks
 
 **Response** (200):
 ```json
@@ -149,7 +151,28 @@ All responses follow this JSON format:
   "success": true,
   "message": "Tasks retrieved successfully",
   "data": {
-    "tasks": [ ... ],
+    "tasks": [
+      {
+        "_id": "507f1f77bcf86cd799439001",
+        "title": "Implement JWT authentication middleware",
+        "description": "Add authentication layer using JWT tokens for API security",
+        "completed": false,
+        "dueDate": "2026-05-10T14:30:00Z",
+        "category": "Security",
+        "createdAt": "2026-04-14T10:00:00Z",
+        "updatedAt": "2026-04-14T10:00:00Z"
+      },
+      {
+        "_id": "507f1f77bcf86cd799439002",
+        "title": "Optimize database query performance",
+        "description": "Add indexes to frequently queried fields and analyze query execution plans",
+        "completed": true,
+        "dueDate": "2026-05-12T09:00:00Z",
+        "category": "Backend",
+        "createdAt": "2026-04-13T15:20:00Z",
+        "updatedAt": "2026-04-14T11:45:00Z"
+      }
+    ],
     "pagination": {
       "total": 25,
       "page": 1,
@@ -161,15 +184,18 @@ All responses follow this JSON format:
 ```
 
 ### 3. Update a Task
-**PATCH** `/tasks/:id`
+**PATCH** `http://localhost:3000/tasks/:id`
+
+**URL Example**:
+- `http://localhost:3000/tasks/507f1f77bcf86cd799439001`
 
 **Request Body** (any fields to update):
 ```json
 {
-  "title": "Updated title",
-  "description": "Updated description",
-  "dueDate": "2026-05-20T10:00:00Z",
-  "category": "Work"
+  "title": "Implement JWT authentication middleware with refresh tokens",
+  "description": "Add authentication layer using JWT tokens for API security with automatic token refresh mechanism",
+  "dueDate": "2026-05-18T16:00:00Z",
+  "category": "Security"
 }
 ```
 
@@ -177,38 +203,65 @@ All responses follow this JSON format:
 - Only provided fields will be updated
 - `title` cannot be empty if updated
 - ID must be a valid MongoDB ObjectId
+- You can update any single field or multiple fields
 
 **Response** (200):
 ```json
 {
   "success": true,
   "message": "Task updated successfully",
-  "data": { ... }
+  "data": {
+    "_id": "507f1f77bcf86cd799439001",
+    "title": "Implement JWT authentication middleware with refresh tokens",
+    "description": "Add authentication layer using JWT tokens for API security with automatic token refresh mechanism",
+    "completed": false,
+    "dueDate": "2026-05-18T16:00:00Z",
+    "category": "Security",
+    "createdAt": "2026-04-14T10:00:00Z",
+    "updatedAt": "2026-04-14T12:30:00Z"
+  }
 }
 ```
 
 ### 4. Mark Task as Completed
-**PATCH** `/tasks/:id/complete`
+**PATCH** `http://localhost:3000/tasks/:id/complete`
+
+**URL Example**:
+- `http://localhost:3000/tasks/507f1f77bcf86cd799439001/complete`
 
 **Notes**:
 - Cannot mark an already completed task as completed again
 - Returns 400 error if already completed
+- No request body required
 
 **Response** (200):
 ```json
 {
   "success": true,
   "message": "Task marked as completed",
-  "data": { ... }
+  "data": {
+    "_id": "507f1f77bcf86cd799439001",
+    "title": "Optimize database query performance",
+    "description": "Add indexes to frequently queried fields and analyze query execution plans",
+    "completed": true,
+    "dueDate": "2026-05-12T09:00:00Z",
+    "category": "Backend",
+    "createdAt": "2026-04-13T15:20:00Z",
+    "updatedAt": "2026-04-14T13:15:00Z"
+  }
 }
 ```
 
 ### 5. Delete a Task
-**DELETE** `/tasks/:id`
+**DELETE** `http://localhost:3000/tasks/:id`
+
+**URL Example**:
+- `http://localhost:3000/tasks/507f1f77bcf86cd799439001`
 
 **Notes**:
 - Permanently deletes the task
 - Returns 404 if task doesn't exist
+- No request body required
 
 **Response** (200):
 ```json
@@ -245,31 +298,67 @@ The API returns appropriate HTTP status codes:
 3. Test each endpoint with sample data
 
 ### Using cURL
+
+**Create Task**:
 ```bash
-# Create task
 curl -X POST http://localhost:3000/tasks \
   -H "Content-Type: application/json" \
-  -d '{"title":"My Task","description":"Task description"}'
-
-# Get all tasks
-curl http://localhost:3000/tasks
-
-# Get incomplete tasks
-curl "http://localhost:3000/tasks?completed=false"
-
-# Update task
-curl -X PATCH http://localhost:3000/tasks/[TASK_ID] \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Updated Title"}'
-
-# Mark as completed
-curl -X PATCH http://localhost:3000/tasks/[TASK_ID]/complete
-
-# Delete task
-curl -X DELETE http://localhost:3000/tasks/[TASK_ID]
+  -d '{
+    "title": "Fix deprecation warnings in dependencies",
+    "description": "Update deprecated npm packages to latest compatible versions",
+    "dueDate": "2026-05-20T10:00:00Z",
+    "category": "Maintenance"
+  }'
 ```
 
-Replace `[TASK_ID]` with actual MongoDB ObjectId from created tasks.
+**Get All Tasks**:
+```bash
+curl http://localhost:3000/tasks
+```
+
+**Get Only Incomplete Tasks**:
+```bash
+curl "http://localhost:3000/tasks?completed=false"
+```
+
+**Get Only Completed Tasks**:
+```bash
+curl "http://localhost:3000/tasks?completed=true"
+```
+
+**Get Tasks with Pagination (Page 2, 5 per page)**:
+```bash
+curl "http://localhost:3000/tasks?page=2&limit=5"
+```
+
+**Fetch All Incomplete Backend Tasks** (pagination example):
+```bash
+curl "http://localhost:3000/tasks?completed=false&page=1&limit=20"
+```
+
+**Update Task**:
+```bash
+curl -X PATCH http://localhost:3000/tasks/507f1f77bcf86cd799439001 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Add integration tests for authentication module",
+    "description": "Write comprehensive tests covering all auth scenarios",
+    "category": "Testing"
+  }'
+```
+
+**Mark Task as Completed**:
+```bash
+curl -X PATCH http://localhost:3000/tasks/507f1f77bcf86cd799439001/complete \
+  -H "Content-Type: application/json"
+```
+
+**Delete Task**:
+```bash
+curl -X DELETE http://localhost:3000/tasks/507f1f77bcf86cd799439001
+```
+
+Replace `507f1f77bcf86cd799439001` with actual MongoDB ObjectId from created tasks.
 
 ## Task Data Model
 
